@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatAmIWatching?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1021;
+      --card: rgba(255, 255, 255, 0.06);
+      --muted: #9db5d6;
+      --glow: #5fe5c7;
+      --accent: #3ec6ff;
+      --text: #f6fbff;
+      --danger: #ff7b7b;
+      --border: rgba(255, 255, 255, 0.12);
+      --shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(111, 210, 255, 0.12), transparent 25%),
+                  radial-gradient(circle at 80% 0%, rgba(95, 229, 199, 0.18), transparent 25%),
+                  radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.05), transparent 30%),
+                  linear-gradient(145deg, #080c1b, #0d1230);
+      color: var(--text);
+      padding: 32px 20px 64px;
+      line-height: 1.6;
+    }
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #42c5ff, #5fe5c7);
+      display: grid;
+      place-items: center;
+      color: #041225;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 10px 30px rgba(66, 197, 255, 0.35);
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .controls {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .lang-select {
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 14px;
+      min-width: 130px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .lang-select:focus {
+      border-color: var(--accent);
+    }
+    .input-wrap {
+      position: relative;
+      flex: 1;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .suggestions {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #0f172d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      max-height: 280px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    }
+    .suggestions.visible { display: block; }
+    .suggestion {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      width: 100%;
+      padding: 12px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .suggestion:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .suggestion .title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .suggestion .meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s;
+      font-size: 15px;
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    .primary {
+      background: linear-gradient(135deg, #42c5ff, #5fe5c7);
+      color: #041225;
+      box-shadow: 0 10px 40px rgba(66, 197, 255, 0.25);
+      white-space: nowrap;
+    }
+    .ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .save-key {
+      min-width: 120px;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-top: 24px;
+    }
+    .result {
+      display: none;
+      gap: 18px;
+    }
+    .result.visible {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+    }
+    @media (max-width: 900px) {
+      .result.visible {
+        grid-template-columns: 1fr;
+      }
+    }
+    .poster {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      min-height: 320px;
+    }
+    .poster img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 12px;
+    }
+    .poster .placeholder {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .meta {
+      display: grid;
+      gap: 10px;
+    }
+    .title-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .title-line h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.3px;
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .plot {
+      color: #d9e6ff;
+      margin: 4px 0 6px;
+      font-size: 15px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .meta-item {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+    .meta-item .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .meta-item .value {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 15px;
+    }
+    .fanart {
+      margin-top: 12px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+    }
+    .fanart .art-wrap {
+      width: 380px;
+      height: 380px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      display: grid;
+      place-items: center;
+    }
+    .fanart img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+    .fanart .fallback {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: rgba(15, 22, 40, 0.95);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--danger);
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      display: none;
+      max-width: 320px;
+    }
+    .toast.show {
+      display: block;
+    }
+    .loader {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .visuals {
+      display: grid;
+      gap: 12px;
+    }
+    .fanart-block {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="logo">WA</div>
+        <div>
+          <h1>What Am I Watching ?</h1>
+          <div class="tagline">Cherchez des films/séries, affichez les infos et exportez en PDF.</div>
+          <div class="tagline"><a id="author-link" href="https://github.com/Saruflus" style="color: var(--accent); text-decoration: none;">Par Sulfuras</a></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div>
+        <label id="search-label" for="query">Rechercher un titre</label>
+        <form id="search-form" class="input-group">
+          <div class="input-wrap">
+            <input id="query" type="text" placeholder="e.g. Dune, Succession, The Last of Us" autocomplete="off" required>
+            <div id="suggestions" class="suggestions"></div>
+          </div>
+          <button id="search-btn" class="primary" type="submit">Rechercher</button>
+          <select id="lang-select" class="lang-select">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="orc">Daraktan</option>
+          </select>
+        </form>
+        <div id="hint-copy" class="hint">Autocomplete et la recherche utilisent iTunes. Les détails proviennent d'OMDb et de fanart.tv.</div>
+      </div>
+    </section>
+
+    <section id="empty-state" class="panel state">
+      Commencez par rechercher un film ou une série. Nous extrairons les métadonnées, les illustrations et créerons une vue prête à être exportée au format PDF.
+    </section>
+
+    <section id="result" class="panel result">
+      <div class="visuals">
+        <div class="poster" id="poster-slot">
+          <div class="placeholder">Poster will appear here once you search.</div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="title-line">
+          <h2 id="title">No title yet</h2>
+          <span id="type" class="pill">TYPE</span>
+          <span id="year" class="pill">YEAR</span>
+        </div>
+        <p id="plot" class="plot"></p>
+        <div class="chips">
+          <span id="genres" class="chip"></span>
+          <span id="runtime" class="chip"></span>
+          <span id="rated" class="chip"></span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div id="label-actors" class="label">Actors</div>
+            <div id="actors" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-director" class="label">Director</div>
+            <div id="director" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-writer" class="label">Writer</div>
+            <div id="writer" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-studio" class="label">Studio</div>
+            <div id="studio" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-boxoffice" class="label">Box office</div>
+            <div id="boxoffice" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-release" class="label">Release</div>
+            <div id="release" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-awards" class="label">Awards</div>
+            <div id="awards" class="value"></div>
+          </div>
+          <div class="meta-item">
+            <div id="label-rating" class="label">IMDb rating</div>
+            <div id="rating" class="value"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="pdf-btn" class="primary" type="button">Download PDF</button>
+          <button id="open-fanart" class="ghost" type="button">Open fanart</button>
+        </div>
+      </div>
+
+      <div class="fanart-block">
+        <div class="fanart" id="fanart">
+          <div class="art-wrap">
+            <div class="fallback">Disc art will appear here when available.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script>
+    const MOVCFG = window.MOV_CONFIG || {};
+    const FANART_KEY = MOVCFG.FANART_KEY || '';
+    const OMDB_KEY = MOVCFG.OMDB_KEY || '';
+    const translations = {
+      fr: {
+        searchLabel: 'Rechercher un titre',
+        searchPlaceholder: 'ex. Dune, Succession, The Last of Us',
+        hint: 'L’autocomplétion utilise iTunes (sans clé). Les détails utilisent OMDb + fanart.tv.',
+        empty: 'Commencez par rechercher un film ou une série. Nous récupérons les métadonnées, les visuels et générons un PDF.',
+        posterPlaceholder: 'L’affiche apparaîtra après votre recherche.',
+        fanartFallback: 'Le disque apparaîtra ici si disponible.',
+        synopsis: 'Synopsis',
+        credits: 'Crédits & infos',
+        fanartDisc: 'Disque fanart',
+        buttons: { search: 'Rechercher', searchBusy: 'Recherche…', pdf: 'Télécharger le PDF', pdfBusy: 'Génération…', fanart: 'Ouvrir le fanart' },
+        toast: { searchFirst: 'Recherchez un titre d’abord.', fanartNone: 'Pas encore de fanart disponible.', pdfError: 'Impossible de générer le PDF.' },
+        header: { type: 'Type', year: 'Année', runtime: 'Durée', rated: 'Classement' },
+        labels: { actors: 'Acteurs', director: 'Réalisateur', writer: 'Scénario', studio: 'Studio', boxoffice: 'Box-office', release: 'Sortie', awards: 'Récompenses', rating: 'Note IMDb' }
+      },
+      en: {
+        searchLabel: 'Search title',
+        searchPlaceholder: 'e.g. Dune, Succession, The Last of Us',
+        hint: 'Autocomplete uses iTunes (no key). Details use OMDb + fanart.tv.',
+        empty: 'Start by searching a movie or show. We will pull metadata, art, and build a PDF-ready view.',
+        posterPlaceholder: 'Poster will appear here once you search.',
+        fanartFallback: 'Disc art will appear here when available.',
+        synopsis: 'Synopsis',
+        credits: 'Credits & info',
+        fanartDisc: 'Fanart disc',
+        buttons: { search: 'Search', searchBusy: 'Searching…', pdf: 'Download PDF', pdfBusy: 'Building…', fanart: 'Open fanart' },
+        toast: { searchFirst: 'Search for a title first.', fanartNone: 'No fanart available yet.', pdfError: 'Could not build PDF.' },
+        header: { type: 'Type', year: 'Year', runtime: 'Runtime', rated: 'Rated' },
+        labels: { actors: 'Actors', director: 'Director', writer: 'Writer', studio: 'Studio', boxoffice: 'Box office', release: 'Release', awards: 'Awards', rating: 'IMDb rating' }
+      },
+      orc: {
+        searchLabel: "Grak’thur Mog",
+        searchPlaceholder: "ug. Dûrn, Sukk’resh’n, Las’togh Us",
+        hint: "Uth’krag-tek snor iTunes. Det’rash gru OMDb + fanart.tv.",
+        empty: "Gor-kran mogg film ur shog. Nar’gakh drag metadata, art, an forge PDF-vaar.",
+        posterPlaceholder: "Gor’gakh plak’kur mogh aran gru.",
+        fanartFallback: "Dis’kragh art mogh aran tar’gûl.",
+        synopsis: "Ghrun’opsis",
+        credits: "Krâdur & infu",
+        fanartDisc: "Fanart dis’gûl",
+        buttons: {
+          search: "Mog’thur",
+          searchBusy: "Moggar…",
+          pdf: "Grum PDF",
+          pdfBusy: "Smash’gûl…",
+          fanart: "Gor fanart"
+        },
+        toast: {
+          searchFirst: "Mog’thur titl’ak first!",
+          fanartNone: "No fanart grûn.",
+          pdfError: "PDF krash’d. No build."
+        },
+        header: {
+          type: "Ghrum",
+          year: "Yarr",
+          runtime: "Run’trak",
+          rated: "Rât’d"
+        },
+        labels: {
+          actors: "Akt’rug",
+          director: "Dir’ghak",
+          writer: "Wra’tor",
+          studio: "Stud’rok",
+          boxoffice: "Box-kragh",
+          release: "Rel’gûl",
+          awards: "Awar’gash",
+          rating: "IMDb rât’gûl"
+        }
+      }
+    };
+    const state = { omdb: null, fanartUrl: null, fanartSource: null, lang: 'fr', plotFr: null };
+
+    const $ = (id) => document.getElementById(id);
+    const searchForm = $('search-form');
+    const queryInput = $('query');
+    const searchBtn = $('search-btn');
+    const emptyState = $('empty-state');
+    const resultEl = $('result');
+    const posterSlot = $('poster-slot');
+    const fanartEl = $('fanart');
+    const openFanartBtn = $('open-fanart');
+    const pdfBtn = $('pdf-btn');
+    const toastEl = $('toast');
+    const suggestionsBox = $('suggestions');
+    const langSelect = $('lang-select');
+    const searchLabelEl = $('search-label');
+    const hintCopyEl = $('hint-copy');
+    const labelActors = $('label-actors');
+    const labelDirector = $('label-director');
+    const labelWriter = $('label-writer');
+    const labelStudio = $('label-studio');
+    const labelBox = $('label-boxoffice');
+    const labelRelease = $('label-release');
+    const labelAwards = $('label-awards');
+    const labelRating = $('label-rating');
+    const authorLink = $('author-link');
+
+    const setText = (id, value) => {
+      const el = $(id);
+      el.textContent = value || '—';
+    };
+
+    const tr = (path) => {
+      const dict = translations[state.lang] || translations.fr;
+      const parts = path.split('.');
+      let cur = dict;
+      for (const p of parts) {
+        if (cur && Object.prototype.hasOwnProperty.call(cur, p)) {
+          cur = cur[p];
+        } else {
+          return '';
+        }
+      }
+      return cur || '';
+    };
+
+    const showToast = (msg) => {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3200);
+    };
+
+    const setLoading = (isLoading) => {
+      if (isLoading) {
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = `<span class="loader"></span>${tr('buttons.searchBusy')}`;
+      } else {
+        searchBtn.disabled = false;
+        searchBtn.textContent = tr('buttons.search');
+      }
+    };
+
+    const setPdfLoading = (isLoading) => {
+      if (isLoading) {
+        pdfBtn.disabled = true;
+        pdfBtn.innerHTML = `<span class="loader"></span>${tr('buttons.pdfBusy')}`;
+      } else {
+        pdfBtn.disabled = false;
+        pdfBtn.textContent = tr('buttons.pdf');
+      }
+    };
+
+    const debounce = (fn, delay = 250) => {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const normalize = (val) => val && val !== 'N/A' ? val : '—';
+
+    const renderPoster = (url) => {
+      posterSlot.innerHTML = '';
+      if (url && url !== 'N/A') {
+        const img = document.createElement('img');
+        img.alt = 'Poster';
+        img.src = url;
+        posterSlot.appendChild(img);
+      } else {
+        const div = document.createElement('div');
+        div.className = 'placeholder';
+        div.textContent = tr('posterPlaceholder');
+        posterSlot.appendChild(div);
+      }
+    };
+
+    const renderFanart = (url, source) => {
+      fanartEl.innerHTML = '';
+      const artWrap = document.createElement('div');
+      artWrap.className = 'art-wrap';
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Disc art';
+        artWrap.appendChild(img);
+      } else {
+        const div = document.createElement('div');
+        div.className = 'fallback';
+        div.textContent = tr('fanartFallback');
+        artWrap.appendChild(div);
+      }
+      fanartEl.appendChild(artWrap);
+    };
+
+    const renderResult = (data) => {
+      if (!data) return;
+      emptyState.style.display = 'none';
+      resultEl.classList.add('visible');
+      renderPoster(data.Poster);
+      setText('title', data.Title);
+      setText('type', data.Type ? data.Type.toUpperCase() : '—');
+      setText('year', data.Year);
+      $('genres').textContent = normalize(data.Genre);
+      $('runtime').textContent = normalize(data.Runtime);
+      $('rated').textContent = normalize(data.Rated);
+      const plotText = state.lang === 'fr' && state.plotFr ? state.plotFr : normalize(data.Plot);
+      $('plot').textContent = plotText;
+      $('actors').textContent = normalize(data.Actors);
+      $('director').textContent = normalize(data.Director);
+      $('writer').textContent = normalize(data.Writer);
+      $('studio').textContent = normalize(data.Production);
+      $('boxoffice').textContent = normalize(data.BoxOffice);
+      $('release').textContent = normalize(data.Released);
+      $('awards').textContent = normalize(data.Awards);
+      $('rating').textContent = normalize(data.imdbRating);
+    };
+
+    const fetchJson = async (url, label) => {
+      const res = await fetch(url, { headers: { accept: 'application/json' } });
+      if (!res.ok) throw new Error(label + ' request failed.');
+      return res.json();
+    };
+
+    const translateText = async (text, targetLang) => {
+      if (!text) return text;
+      // MyMemory limite la longueur (~500 caractères) : on tronque pour éviter l’erreur.
+      const trimmed = text.length > 450 ? text.slice(0, 450) + '…' : text;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=en|${targetLang}`;
+      try {
+        const data = await fetchJson(url, 'Translate');
+        const translated = data?.responseData?.translatedText;
+        return translated || text;
+      } catch (_) {
+        return text;
+      }
+    };
+
+    // Fanart.tv est parfois sans CORS : on repasse par un proxy si besoin.
+    const fetchFanartJson = async (url) => {
+      try {
+        return await fetchJson(url, 'Fanart');
+      } catch (err) {
+        try {
+          const proxied = 'https://corsproxy.io/?' + encodeURIComponent(url);
+          return await fetchJson(proxied, 'Fanart');
+        } catch (err2) {
+          throw err2;
+        }
+      }
+    };
+
+    const fetchOmdb = async (title, key) => {
+      const url = `https://www.omdbapi.com/?apikey=${key}&t=${encodeURIComponent(title)}&plot=full`;
+      const data = await fetchJson(url, 'OMDb');
+      if (data.Response === 'False') {
+        throw new Error(data.Error || 'Title not found.');
+      }
+      return data;
+    };
+
+    const fetchOmdbList = async (term) => {
+      const url = `https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(term)}`;
+      try {
+        const data = await fetchJson(url, 'OMDb search');
+        if (data.Response === 'False') return [];
+        return (data.Search || []).map((item) => ({
+          title: item.Title,
+          type: (item.Type || '').toLowerCase() === 'series' ? 'Show' : 'Movie',
+          year: item.Year || ''
+        }));
+      } catch (_) {
+        return [];
+      }
+    };
+
+    const fallbackSuggestions = [
+      { title: 'Inception', type: 'Movie', year: '2010' },
+      { title: 'The Dark Knight', type: 'Movie', year: '2008' },
+      { title: 'Dune', type: 'Movie', year: '2021' },
+      { title: 'Succession', type: 'Show', year: '2018' },
+      { title: 'The Last of Us', type: 'Show', year: '2023' },
+      { title: 'Chernobyl', type: 'Show', year: '2019' }
+    ];
+
+    const hideSuggestions = () => {
+      suggestionsBox.classList.remove('visible');
+    };
+
+    const renderSuggestions = (items) => {
+      suggestionsBox.innerHTML = '';
+      if (!items || !items.length) {
+        hideSuggestions();
+        return;
+      }
+      items.slice(0, 8).forEach((item) => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'suggestion';
+        row.innerHTML = '<span class="title">' + item.title + '</span>' +
+          '<span class="meta">' + item.type + (item.year ? ' · ' + item.year : '') + '</span>';
+        row.addEventListener('click', () => {
+          queryInput.value = item.title;
+          hideSuggestions();
+          performSearch(item.title);
+        });
+        suggestionsBox.appendChild(row);
+      });
+      suggestionsBox.classList.add('visible');
+    };
+
+    const mapItunesItem = (item, typeLabel) => {
+      const title = item.trackName || item.collectionName;
+      const year = item.releaseDate ? new Date(item.releaseDate).getFullYear() : '';
+      return title ? { title, type: typeLabel, year } : null;
+    };
+
+    const fetchItunes = async (term, media) => {
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=${media}&limit=6`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const payload = await res.json();
+      return (payload.results || [])
+        .map((item) => mapItunesItem(item, media === 'tvShow' ? 'Show' : 'Movie'))
+        .filter(Boolean);
+    };
+
+    const fetchSuggestions = async (term) => {
+      const omdbMatches = await fetchOmdbList(term);
+      if (omdbMatches.length) return omdbMatches;
+
+      const [movies, shows] = await Promise.all([
+        fetchItunes(term, 'movie'),
+        fetchItunes(term, 'tvShow')
+      ]);
+      const combined = [...movies, ...shows];
+      if (combined.length) return combined;
+      return fallbackSuggestions;
+    };
+
+    const handleSuggestInput = debounce(async () => {
+      const term = queryInput.value.trim();
+      if (term.length < 3) {
+        hideSuggestions();
+        return;
+      }
+      try {
+        const items = await fetchSuggestions(term);
+        renderSuggestions(items);
+      } catch (_) {
+        renderSuggestions(fallbackSuggestions);
+      }
+    }, 220);
+
+    const lookupTvdbId = async (imdbId) => {
+      try {
+        const lookupUrl = `https://api.tvmaze.com/lookup/shows?imdb=${imdbId}`;
+        const res = await fetch(lookupUrl);
+        if (!res.ok) return null;
+        const payload = await res.json();
+        return payload && payload.externals && payload.externals.thetvdb ? payload.externals.thetvdb : null;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const bestArtFromList = (list) => {
+      if (!Array.isArray(list) || !list.length) return null;
+      const sorted = list
+        .filter((item) => item && item.url)
+        .sort((a, b) => (Number(b.likes || 0) || 0) - (Number(a.likes || 0) || 0));
+      return sorted.length ? sorted[0].url : null;
+    };
+
+    const pickArt = (payload, primaryKeys, fallbackKeys = []) => {
+      for (const key of primaryKeys) {
+        const url = bestArtFromList(payload[key]);
+        if (url) return { url, kind: 'disc' };
+      }
+      for (const key of fallbackKeys) {
+        const url = bestArtFromList(payload[key]);
+        if (url) return { url, kind: 'fallback' };
+      }
+      return { url: null, kind: null };
+    };
+
+    const fetchFanart = async (data) => {
+      const imdbId = data.imdbID;
+      if (!imdbId) return { url: null, source: null };
+
+      // Films : on privilégie l’art du disque, puis on retombe sur d’autres visuels. Séries : affiches/fonds.
+      // On interroge TVMaze pour obtenir l’ID TVDB des séries avant fanart.tv.
+      if ((data.Type || '').toLowerCase() === 'series') {
+        try {
+          const tvdbId = await lookupTvdbId(imdbId);
+          if (tvdbId) {
+            const payload = await fetchFanartJson(`https://webservice.fanart.tv/v3/tv/${tvdbId}?api_key=${FANART_KEY}`);
+            const art = pickArt(payload, ['clearart', 'hdclearart'], ['hdtvlogo', 'clearlogo', 'tvposter', 'showbackground']);
+            if (art.url) return { url: art.url, source: 'fanart.tv (tv)' };
+          }
+        } catch (_) {
+          // ignorer et continuer
+        }
+      }
+
+      try {
+        const payload = await fetchFanartJson(`https://webservice.fanart.tv/v3/movies/${imdbId}?api_key=${FANART_KEY}`);
+        const art = pickArt(payload, ['hdmoviedisc', 'moviedisc'], ['movieposter', 'moviebackground', 'fanart']);
+        if (art.url) {
+          return { url: art.url, source: art.kind === 'disc' ? 'fanart.tv (disc)' : 'fanart.tv (fallback)' };
+        }
+      } catch (_) {
+        // ignorer en dernier recours
+      }
+
+      return { url: null, source: null };
+    };
+
+    const toDataUrl = async (url) => {
+      const fetchWithFallback = async (target) => {
+        try {
+          const res = await fetch(target);
+          if (!res.ok) throw new Error('Image fetch failed');
+          return res.blob();
+        } catch (err) {
+          const proxied = 'https://corsproxy.io/?' + encodeURIComponent(target);
+          const res2 = await fetch(proxied);
+          if (!res2.ok) throw new Error('Image fetch failed');
+          return res2.blob();
+        }
+      };
+
+      const blob = await fetchWithFallback(url);
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result;
+          const img = new Image();
+          img.onload = () => resolve({
+            dataUrl,
+            format: blob.type.includes('png') ? 'PNG' : 'JPEG',
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height
+          });
+          img.onerror = () => resolve({
+            dataUrl,
+            format: blob.type.includes('png') ? 'PNG' : 'JPEG',
+            width: 0,
+            height: 0
+          });
+          img.src = dataUrl;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
+
+    const buildPdf = async () => {
+      if (!state.omdb) {
+        showToast(tr('toast.searchFirst'));
+        return;
+      }
+      setPdfLoading(true);
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const margin = 42;
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const textWidth = pageW - margin * 2;
+      const scaleToFit = (w, h, maxW, maxH) => {
+        if (!w || !h) return { w: maxW, h: maxH };
+        const ratio = Math.min(maxW / w, maxH / h);
+        return { w: w * ratio, h: h * ratio };
+      };
+
+      // Fond blanc
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, pageH, 'F');
+
+      doc.setTextColor(20, 24, 33);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text(state.omdb.Title || 'Untitled', margin, margin + 6);
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(90, 99, 115);
+      const header = [
+        `${tr('header.type')}: ${state.omdb.Type || '—'}`,
+        `${tr('header.year')}: ${state.omdb.Year || '—'}`,
+        `${tr('header.runtime')}: ${state.omdb.Runtime || '—'}`,
+        `${tr('header.rated')}: ${state.omdb.Rated || '—'}`
+      ].join('   |   ');
+      doc.text(header, margin, margin + 24);
+
+      let posterW = 0;
+      let posterH = 0;
+      const posterMaxW = 200;
+      const posterMaxH = 300;
+      const artSize = 220;
+      const contentY = margin + 40;
+
+      try {
+        if (state.omdb.Poster && state.omdb.Poster !== 'N/A') {
+          const imgData = await toDataUrl(state.omdb.Poster);
+          const dims = scaleToFit(imgData.width || 600, imgData.height || 900, posterMaxW, posterMaxH);
+          posterW = dims.w;
+          posterH = dims.h;
+          doc.addImage(imgData.dataUrl, imgData.format, margin, contentY, posterW, posterH, undefined, 'FAST');
+        }
+      } catch (_) {
+        // ignorer les erreurs d’affiche
+      }
+
+      const textX = posterW ? margin + posterW + 16 : margin;
+      const synopsisY = contentY + 10;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(20, 24, 33);
+      doc.text(tr('synopsis'), textX, synopsisY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 70, 85);
+      const plotText = state.lang === 'fr' && state.plotFr ? state.plotFr : normalize(state.omdb.Plot);
+      const plot = doc.splitTextToSize(plotText, pageW - textX - margin);
+      doc.text(plot, textX, synopsisY + 16);
+
+      const blockBottom = Math.max(
+        contentY + (posterH || 0),
+        synopsisY + 16 + plot.length * 14
+      );
+
+      const metaStart = blockBottom + 24;
+      doc.setTextColor(20, 24, 33);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text(tr('credits'), margin, metaStart);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(50, 60, 75);
+      const lines = [
+        `${tr('labels.actors')}: ${normalize(state.omdb.Actors)}`,
+        `${tr('labels.director')}: ${normalize(state.omdb.Director)}`,
+        `${tr('labels.writer')}: ${normalize(state.omdb.Writer)}`,
+        `${tr('labels.studio')}: ${normalize(state.omdb.Production)}`,
+        `${tr('labels.boxoffice')}: ${normalize(state.omdb.BoxOffice)}`,
+        `${tr('labels.release')}: ${normalize(state.omdb.Released)}`,
+        `${tr('labels.awards')}: ${normalize(state.omdb.Awards)}`,
+        `${tr('labels.rating')}: ${normalize(state.omdb.imdbRating)}`
+      ];
+      let y = metaStart + 16;
+      lines.forEach((line) => {
+        const wrapped = doc.splitTextToSize(line, textWidth);
+        doc.text(wrapped, margin, y);
+        y += wrapped.length * 14;
+      });
+
+      if (state.fanartUrl) {
+        try {
+          const artData = await toDataUrl(state.fanartUrl);
+          const dims = scaleToFit(artData.width || 512, artData.height || 512, artSize, artSize);
+          const discY = pageH - dims.h - margin;
+          const artX = (pageW - dims.w) / 2;
+          doc.addImage(artData.dataUrl, artData.format, artX, discY, dims.w, dims.h, undefined, 'FAST');
+        } catch (_) {
+          // ignorer les erreurs fanart
+        }
+      }
+
+      const safeTitle = (state.omdb.Title || 'movie').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+      doc.save(`${safeTitle || 'movie'}.pdf`);
+      setPdfLoading(false);
+    };
+
+    const performSearch = async (query) => {
+      if (!OMDB_KEY) {
+        showToast('Configure OMDb key in config.js');
+        return;
+      }
+      hideSuggestions();
+      setLoading(true);
+      try {
+        const omdbData = await fetchOmdb(query, OMDB_KEY);
+        const fanart = await fetchFanart(omdbData);
+        state.omdb = omdbData;
+        state.plotFr = null;
+        state.fanartUrl = fanart.url;
+        state.fanartSource = fanart.source;
+        renderResult(omdbData);
+        renderFanart(fanart.url, fanart.source);
+        if (state.lang === 'fr' && omdbData.Plot) {
+          translateText(omdbData.Plot, 'fr').then((t) => {
+            state.plotFr = t;
+            if (state.lang === 'fr') $('plot').textContent = t;
+          });
+        }
+      } catch (err) {
+        showToast(err.message || 'Search failed.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = queryInput.value.trim();
+      if (!query) return;
+      performSearch(query);
+    });
+
+    queryInput.addEventListener('input', handleSuggestInput);
+    queryInput.addEventListener('focus', () => {
+      if (suggestionsBox.children.length) suggestionsBox.classList.add('visible');
+    });
+    document.addEventListener('click', (e) => {
+      if (!suggestionsBox.contains(e.target) && e.target !== queryInput) {
+        hideSuggestions();
+      }
+    });
+
+    openFanartBtn.addEventListener('click', () => {
+      if (state.fanartUrl) {
+        window.open(state.fanartUrl, '_blank');
+      } else {
+        showToast(tr('toast.fanartNone'));
+      }
+    });
+    pdfBtn.addEventListener('click', () => buildPdf().catch(() => {
+      setPdfLoading(false);
+      showToast(tr('toast.pdfError'));
+    }));
+
+    const applyLanguage = (lang) => {
+      state.lang = translations[lang] ? lang : 'fr';
+      if (langSelect) langSelect.value = state.lang;
+      if (searchLabelEl) searchLabelEl.textContent = tr('searchLabel');
+      if (hintCopyEl) hintCopyEl.textContent = tr('hint');
+      if (emptyState) emptyState.textContent = tr('empty');
+      queryInput.placeholder = tr('searchPlaceholder');
+      searchBtn.textContent = tr('buttons.search');
+      pdfBtn.textContent = tr('buttons.pdf');
+      openFanartBtn.textContent = tr('buttons.fanart');
+      if (labelActors) labelActors.textContent = tr('labels.actors');
+      if (labelDirector) labelDirector.textContent = tr('labels.director');
+      if (labelWriter) labelWriter.textContent = tr('labels.writer');
+      if (labelStudio) labelStudio.textContent = tr('labels.studio');
+      if (labelBox) labelBox.textContent = tr('labels.boxoffice');
+      if (labelRelease) labelRelease.textContent = tr('labels.release');
+      if (labelAwards) labelAwards.textContent = tr('labels.awards');
+      if (labelRating) labelRating.textContent = tr('labels.rating');
+      if (authorLink) authorLink.textContent = state.lang === 'en' ? 'By Sulfuras' : 'Par Sulfuras';
+      renderPoster(state.omdb ? state.omdb.Poster : null);
+      renderFanart(state.fanartUrl, state.fanartSource);
+    };
+
+    if (langSelect) {
+      langSelect.addEventListener('change', (e) => {
+        applyLanguage(e.target.value);
+        if (state.lang === 'fr' && state.omdb && state.omdb.Plot && !state.plotFr) {
+          translateText(state.omdb.Plot, 'fr').then((t) => {
+            state.plotFr = t;
+            if (state.lang === 'fr') $('plot').textContent = t;
+          });
+        }
+        if (state.lang === 'en' && state.omdb) {
+          $('plot').textContent = normalize(state.omdb.Plot);
+        }
+      });
+    }
+
+    applyLanguage(state.lang);
+  </script>
+</body>
+</html>
