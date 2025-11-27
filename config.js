@@ -3,6 +3,6 @@
 window.MOV_CONFIG = {
   // Clé Fanart.tv
   FANART_KEY: '',
-  // Clé OMDb
-  OMDB_KEY: ''
+  // Clé TMDB
+  TMDB_KEY: ''
 };
